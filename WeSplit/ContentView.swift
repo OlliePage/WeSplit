@@ -8,6 +8,9 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    private var currencyFormat: FloatingPointFormatStyle<Double>.Currency = .currency(code: Locale.current.currencyCode ?? "USD")
+    
     @State private var checkAmount = 0.0
     @State private var numberOfPeople = 2
     @State private var tipPercentage = 20
@@ -28,12 +31,22 @@ struct ContentView: View {
         return amountPerPerson
     }
     
+    var grandTotal: Double {
+        
+        let tipSelection = Double(tipPercentage)
+        
+        let tipValue = checkAmount / 100 * tipSelection
+        let grandTotal = checkAmount + tipValue
+        
+        return grandTotal
+    }
+    
     var body: some View {
         NavigationView{
             Form {
                 Section {
                     TextField("Amount", value: $checkAmount, format:
-                            .currency(code: Locale.current.currencyCode ?? "USD"))
+                                currencyFormat)
                     .keyboardType(.decimalPad)
                     .focused($amountIsFocused)
                     
@@ -46,21 +59,29 @@ struct ContentView: View {
                 
                 Section {
                     Picker("Tip Percentage", selection: $tipPercentage) {
-                        ForEach(tipPercentages, id: \.self) {
+                        ForEach(0..<101, id: \.self) {
                             Text($0, format: .percent)
                         }
                     }
-                    .pickerStyle(.segmented)
+                    .pickerStyle(.wheel)
                 } header: {
                     Text("how much do you want to tip")
                 }
                
                 Section {
                         Text(totalPerPerson, format: .currency(code: Locale.current.currencyCode ?? "USD"))
-                        }
+                } header: {
+                    Text("Amount per person")
+                }
+                
+                Section {
+                    Text(grandTotal , format: currencyFormat)
+                } header: {
+                    Text("Total Bill")
+                }
             }
+            .navigationTitle("WeSplit")
         }
-        .navigationTitle("WeSplit")
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
